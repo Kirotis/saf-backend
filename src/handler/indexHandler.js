@@ -8,7 +8,7 @@ const io = socketIo(httpServer, {
   },
 });
 
-const { leaveRoom, joinRoom, editHref, createRoom } = require("./roomHandler")(io);
+const { leaveRoom, joinRoom, editHref, createRoom, addLogRoom } = require("./roomHandler")(io);
 
 const onConnection = (socket) => {
   console.log("socket was created " + socket.id);
@@ -17,22 +17,9 @@ const onConnection = (socket) => {
   socket.on("createRoom", createRoom);
   socket.on("joinRoom", joinRoom);
   socket.on("leaveRoom", leaveRoom);
+  socket.on("addLogRoom", addLogRoom);
 };
 
 io.on("connection", onConnection);
 
-const getAllRooms = () => {
-  const arr = Array.from(io.sockets.adapter.rooms);
-  const filtered = arr.filter((room) => !room[1].has(room[0]));
-  const rooms = filtered.map((i) => i[0]);
-  return rooms;
-};
-
-const deleteRoom = (room) => {
-  io.sockets.clients(room).forEach((s) => s.leave(room));
-};
-
-module.exports = {
-  deleteRoom,
-  getAllRooms
-}
+module.exports = io

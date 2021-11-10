@@ -5,6 +5,20 @@ const getRoomInfo = (room) => roomsInfo[room] || "Room wasn't found";
 module.exports = (io) => {
   const socket = this;
 
+  const getAllRooms = () => {
+    const arr = Array.from(io.sockets.adapter.rooms);
+    const filtered = arr.filter((room) => !room[1].has(room[0]));
+    const rooms = filtered.map((i) => i[0]);
+    return rooms;
+  };
+
+  const deleteRoom = (room) => {
+    if (socket.id === roomsInfo[room].hostSocketId) {
+      io.sockets.clients(room).forEach((s) => s.leave(room));
+      delete roomsInfo[room]
+    }
+  }
+
   const addLogRoom = (room, message) => {
     console.info(message);
     if (roomsInfo[room] && roomsInfo[room].logs) {
@@ -13,6 +27,7 @@ module.exports = (io) => {
       roomsInfo[room] = {
         logs: [message],
         href: "none",
+        hostSocketId: socket.id
       };
     }
     socket.to(room).emit("sendLog", roomsInfo[room].logs);
@@ -37,7 +52,7 @@ module.exports = (io) => {
     addLogRoom(room, message, socket);
   };
 
-  const editHref = (room) => {
+  const editHref = (room, href) => {
     const message = `socket ${socket.id} in room ${room} changing href: ${href}`;
     roomsInfo[room].href = href;
     addLogRoom(room, message, socket);
@@ -45,6 +60,8 @@ module.exports = (io) => {
   };
 
   return {
+    getAllRooms,
+    deleteRoom,
     addLogRoom,
     leaveRoom,
     joinRoom,

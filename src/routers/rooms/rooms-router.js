@@ -1,6 +1,5 @@
 const router = require("express").Router();
-const { getAllRooms, deleteRoom } = require("../../handler/indexHandler")
-const { getRoomInfo } = require("../../handler/roomHandler")()
+const { getAllRooms, deleteRoom, getRoomInfo } = require("../../handler/roomHandler")()
 
 router.delete("/room/:name", (req, res, next) => {
   const { name } = req.params;
@@ -16,7 +15,8 @@ router.get("/rooms", (req, res, next) => {
 router.get("/rooms/:name", (req, res, next) => {
   const { name } = req.params;
   const roomInfo = getRoomInfo(name);
-  return res.status(200).json({ roomInfo });
+  if (roomInfo) return res.status(200).json(roomInfo);
+  return res.status(404).json('err')
 })
 
 module.exports = router
