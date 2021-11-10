@@ -1,14 +1,14 @@
 const httpServer = require("../index");
-const { leaveRoom, joinRoom, editHref, createRoom } = require("./roomHandler")(io);
-const socketIo = require("socket.io");
-
 const clientUrl = process.env.CLIENT_URL || "http://localhost:4200";
+const socketIo = require("socket.io");
 const io = socketIo(httpServer, {
   cors: {
     origin: clientUrl,
     methods: ["GET", "POST"],
   },
 });
+
+const { leaveRoom, joinRoom, editHref, createRoom } = require("./roomHandler")(io);
 
 const onConnection = (socket) => {
   console.log("socket was created " + socket.id);
@@ -31,3 +31,8 @@ const getAllRooms = () => {
 const deleteRoom = (room) => {
   io.sockets.clients(room).forEach((s) => s.leave(room));
 };
+
+module.exports = {
+  deleteRoom,
+  getAllRooms
+}

@@ -1,11 +1,12 @@
 const roomsInfo = {};
 const getRoomLogs = (room) => roomsInfo[room].logs;
+const getRoomInfo = (room) => roomsInfo[room] || "Room wasn't found";
 
 module.exports = (io) => {
   const socket = this;
 
   const addLogRoom = (room, message) => {
-    console.log(message);
+    console.info(message);
     if (roomsInfo[room] && roomsInfo[room].logs) {
       roomsInfo[room].logs.push(message);
     } else {
@@ -50,5 +51,6 @@ module.exports = (io) => {
     editHref,
     createRoom,
     getRoomLogs,
+    getRoomInfo,
   };
 };
