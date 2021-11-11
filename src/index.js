@@ -7,6 +7,7 @@ const cors = require("cors");
 const errorMiddleware = require("./middleware/error-middleware");
 const logMiddleware = require("./middleware/log-middleware");
 const router = require("./routers/index");
+const io = require('./handler/indexHandler')
 // const { initDatabase } = require("./database/index");
 
 const serverPort = process.env.PORT || 3000;
@@ -25,5 +26,6 @@ app.use(errorMiddleware);
 server.listen(serverPort, () =>
   console.info(`Server is listening on port: ${serverPort}`)
 );
+io.listen(server)
 
 module.exports = server;
