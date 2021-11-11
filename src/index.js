@@ -7,7 +7,7 @@ const cors = require("cors");
 const errorMiddleware = require("./middleware/error-middleware");
 const logMiddleware = require("./middleware/log-middleware");
 const router = require("./routers/index");
-const io = require('./handler/indexHandler')
+const {io} = require('./handler/indexHandler')
 // const { initDatabase } = require("./database/index");
 
 const serverPort = process.env.PORT || 3000;
@@ -17,7 +17,7 @@ const server = createServer(app);
 app.use(cors());
 app.use(express.json());
 app.use(logMiddleware);
-app.use(router);
+app.use('/api', router);
 app.use(errorMiddleware);
 
 // createSecretCode();

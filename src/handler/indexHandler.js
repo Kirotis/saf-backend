@@ -7,7 +7,7 @@ const io = new Server({
   },
 });
 
-const { leaveRoom, joinRoom, editHref, createRoom, addLogRoom } = require("./roomHandler")(io);
+const { leaveRoom, joinRoom, editHref, createRoom, addLogRoom, getAllRooms, deleteRoom, getRoomInfo } = require("./roomHandler")(io);
 
 const onConnection = (socket) => {
   console.log("socket was created " + socket.id);
@@ -17,8 +17,11 @@ const onConnection = (socket) => {
   socket.on("joinRoom", joinRoom);
   socket.on("leaveRoom", leaveRoom);
   socket.on("addLogRoom", addLogRoom);
+  socket.on("deleteRoom", deleteRoom)
 };
 
 io.on("connection", onConnection);
 
-module.exports = io
+module.exports = {
+  getAllRooms, deleteRoom, getRoomInfo, io
+}

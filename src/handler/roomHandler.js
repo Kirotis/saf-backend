@@ -3,8 +3,6 @@ const getRoomLogs = (room) => roomsInfo[room].logs;
 const getRoomInfo = (room) => roomsInfo[room] || "Room wasn't found";
 
 module.exports = (io) => {
-  const socket = this;
-
   const getAllRooms = () => {
     const arr = Array.from(io.sockets.adapter.rooms);
     const filtered = arr.filter((room) => !room[1].has(room[0]));
@@ -12,14 +10,21 @@ module.exports = (io) => {
     return rooms;
   };
 
-  const deleteRoom = (room) => {
-    if (socket.id === roomsInfo[room].hostSocketId) {
-      io.sockets.clients(room).forEach((s) => s.leave(room));
-      delete roomsInfo[room]
+  const deleteRoom = function (room) {
+    const socket = this;
+    if (roomsInfo[room] && socket.id === roomsInfo[room].hostSocketId) {
+      const clients =  io.of('/').adapter.rooms.get(room)
+      console.log(`clients`, clients)
+      clients.forEach(socketId => {
+        const client = io.of('/').sockets.get(socketId)
+        client && client.leave(room)
+      });
+      delete roomsInfo[room];
+      console.log(`room ${room} was delete`)
     }
-  }
+  };
 
-  const addLogRoom = (room, message) => {
+  const addLogRoom = function (room, message, socket = this) {
     console.info(message);
     if (roomsInfo[room] && roomsInfo[room].logs) {
       roomsInfo[room].logs.push(message);
@@ -27,36 +32,41 @@ module.exports = (io) => {
       roomsInfo[room] = {
         logs: [message],
         href: "none",
-        hostSocketId: socket.id
+        hostSocketId: socket.id,
       };
     }
-    socket.to(room).emit("sendLog", roomsInfo[room].logs);
+    io.in(room).emit("sendLog", message);
   };
 
-  const leaveRoom = (room) => {
+  const leaveRoom = function (room) {
+    const socket = this;
     const message = `socket ${socket.id} has leaved room ${room}`;
     socket.leave(room);
     addLogRoom(room, message, socket);
   };
 
-  const joinRoom = (room) => {
+  const joinRoom = function (room) {
+    const socket = this;
     const message = `socket ${socket.id} has joined room ${room}`;
-    socket.join(room);
-    addLogRoom(room, message, socket);
-    socket.emit("setHref", roomsInfo[room].href);
-  };
-
-  const createRoom = (room) => {
-    const message = `room ${room} was created`;
-    socket.join(room);
+    socket.join(room)
     addLogRoom(room, message, socket);
   };
 
-  const editHref = (room, href) => {
+  const createRoom = function (room) {
+    const socket = this;
+    const message = `room ${room} is created by socket ${socket.id}`;
+    socket.join(room);
+    addLogRoom(room, message, socket);
+  };
+
+  const editHref = function (room, href) {
+    const socket = this;
     const message = `socket ${socket.id} in room ${room} changing href: ${href}`;
-    roomsInfo[room].href = href;
-    addLogRoom(room, message, socket);
-    socket.to(room).emit("setHref", href);
+    if (roomsInfo[room]) {
+      roomsInfo[room].href = href;
+      addLogRoom(room, message, socket);
+      io.in(room).emit("setHref", href);
+    }
   };
 
   return {
