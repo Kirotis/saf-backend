@@ -13,12 +13,13 @@ module.exports = (io) => {
   const deleteRoom = function (room) {
     const socket = this;
     if (roomsInfo[room] && socket.id === roomsInfo[room].hostSocketId) {
-      const clients =  io.of('/').adapter.rooms.get(room)
+      io.of('/').to(room).emit("roomIsDeliting", room)
+      io.of('/').to(room).disconnectSockets(true)
       console.log(`clients`, clients)
-      clients.forEach(socketId => {
-        const client = io.of('/').sockets.get(socketId)
-        client && client.leave(room)
-      });
+      // clients.forEach(socketId => {
+      //   const client = io.of('/').sockets.get(socketId)
+      //   client && client.leave(room)
+      // });
       delete roomsInfo[room];
       console.log(`room ${room} was delete`)
     }

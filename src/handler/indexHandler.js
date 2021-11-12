@@ -1,8 +1,8 @@
-const clientUrl = process.env.CLIENT_URL || "http://localhost:4200";
+// const clientUrl = process.env.CLIENT_URL || "http://localhost:4200";
 const {Server} = require("socket.io");
 const io = new Server({
   cors: {
-    origin: clientUrl,
+    // origin: clientUrl,
     methods: ["GET", "POST"],
   },
 });
