@@ -12,10 +12,10 @@ module.exports = (io) => {
     const deleteRoom = function (room) {
         const socket = this;
         if (roomsInfo[room] && socket.id === roomsInfo[room].hostSocketId) {
-            io.of('/').to(room).emit("roomWasDeleted", room)
-            io.of('/').to(room).disconnectSockets(true)
+            io.of("/").to(room).emit("roomWasDeleted", room);
+            io.of("/").to(room).disconnectSockets(true);
             delete roomsInfo[room];
-            console.log(`room ${room} was delete`)
+            console.log(`room ${room} was delete`);
         }
     };
 
@@ -30,7 +30,7 @@ module.exports = (io) => {
                 hostSocketId: socket.id,
                 isMuted: false,
                 isPause: true,
-                volume: 25
+                volume: 25,
             };
         }
         io.in(room).emit("sendLog", message);
@@ -45,12 +45,12 @@ module.exports = (io) => {
 
     const joinRoom = function (room) {
         const socket = this;
-        const roomInfo = getRoomInfo(room)
+        const roomInfo = getRoomInfo(room);
         if (roomInfo) {
             const message = `socket ${socket.id} has joined room ${room}`;
-            socket.join(room)
+            socket.join(room);
             return addLogRoom(room, message, socket);
-        } else socket.emit("roomWasDeleted", room)
+        } else socket.emit("roomWasDeleted", room);
     };
 
     const createRoom = function (room) {
@@ -69,38 +69,38 @@ module.exports = (io) => {
             io.in(room).emit("setHref", href);
         }
     };
-    const changePauseVideo = (room, pause) => {
-        const socket = this
+    const changePauseVideo = function (room, pause) {
+        const socket = this;
         if (roomsInfo[room]) {
-            const message = `socket ${socket.id} in room ${room} set ${pause ? 'pause' : 'play'} video`
+            const message = `socket ${socket.id} in room ${room} set ${ pause ? "pause" : "play" } video`;
             roomsInfo[room].isPause = pause;
-            addLogRoom(room, message, socket)
-            io.in(room).emit("setPause", pause)
+            addLogRoom(room, message, socket);
+            io.in(room).emit("setPause", pause);
         }
-    }
+    };
     // const changeNextVideo = () => {
     // }
     // const changePreviousVideo = () => {
     // }
 
-    const changeMute = (room, mute) => {
-        const socket = this
+    const changeMute = function (room, mute) {
+        const socket = this;
         if (roomsInfo[room]) {
-            const message = `socket ${socket.id} in room ${room} set ${mute ? 'mute' : 'unmute'} video`
+            const message = `socket ${socket.id} in room ${room} set ${ mute ? "mute" : "unmute" } video`;
             roomsInfo[room].isMuted = mute;
-            addLogRoom(room, message, socket)
-            io.in(room).emit("setMute", mute)
+            addLogRoom(room, message, socket);
+            io.in(room).emit("setMute", mute);
         }
-    }
-    const changeVolume = (room, volume) => {
-        const socket = this
+    };
+    const changeVolume = function (room, volume) {
+        const socket = this;
         if (roomsInfo[room]) {
-            const message = `socket ${socket.id} in room ${room} set ${volume}% volume for video`
+            const message = `socket ${socket.id} in room ${room} set ${volume}% volume for video`;
             roomsInfo[room].volume = volume;
-            addLogRoom(room, message, socket)
-            io.in(room).emit("setVolume", volume)
+            addLogRoom(room, message, socket);
+            io.in(room).emit("setVolume", volume);
         }
-    }
+    };
     // const changeGetPlayerMode = () => {
     // }
     return {

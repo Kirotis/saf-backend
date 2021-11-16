@@ -30,5 +30,5 @@ const onConnection = (socket) => {
 io.on("connection", onConnection);
 
 module.exports = {
-    getAllRooms: roomHandler.getAllRooms, deleteRoom: roomHandler.deleteRoom, getRoomInfo: roomHandler.getAllRooms, io
+    getAllRooms: roomHandler.getAllRooms, deleteRoom: roomHandler.deleteRoom, getRoomInfo: roomHandler.getRoomInfo, io
 }
