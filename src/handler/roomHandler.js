@@ -20,20 +20,25 @@ module.exports = (io) => {
     };
 
     const addLogRoom = function (room, message, socket = this) {
-        console.info(message);
+        const date = new Date()
+        const logData = {
+            message,
+            date: date.valueOf()
+        }
+        console.info(`(${date.toLocaleString()}) ${message}`);
         if (roomsInfo[room] && roomsInfo[room].logs) {
-            roomsInfo[room].logs.push(message);
+            roomsInfo[room].logs.push(logData);
         } else {
             roomsInfo[room] = {
-                logs: [message],
-                href: "none",
+                logs: [logData],
+                activeUrl: "none",
                 hostSocketId: socket.id,
                 isMuted: false,
                 isPause: true,
                 volume: 25,
             };
         }
-        io.in(room).emit("sendLog", message);
+        io.in(room).emit("sendLog", logData);
     };
 
     const leaveRoom = function (room) {
@@ -45,11 +50,11 @@ module.exports = (io) => {
 
     const joinRoom = function (room) {
         const socket = this;
-        const roomInfo = getRoomInfo(room);
-        if (roomInfo) {
+        if (roomsInfo[room]) {
             const message = `socket ${socket.id} has joined room ${room}`;
             socket.join(room);
-            return addLogRoom(room, message, socket);
+            socket.emit("setRoomInfo", roomsInfo[room]);
+            addLogRoom(room, message, socket);
         } else socket.emit("roomWasDeleted", room);
     };
 
@@ -64,7 +69,7 @@ module.exports = (io) => {
         const socket = this;
         if (roomsInfo[room]) {
             const message = `socket ${socket.id} in room ${room} changing href: ${href}`;
-            roomsInfo[room].href = href;
+            roomsInfo[room].activeUrl = href;
             addLogRoom(room, message, socket);
             io.in(room).emit("setHref", href);
         }

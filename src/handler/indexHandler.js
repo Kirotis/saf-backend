@@ -23,7 +23,7 @@ const onConnection = (socket) => {
     // socket.on("changePreviousVideo", roomHandler.changePreviousVideo);
     // socket.on("changePlayVideoAt", roomHandler.changePlayVideoAt);
     socket.on("changeMute", roomHandler.changeMute);
-    socket.on("changeSetVolume", roomHandler.changeVolume);
+    socket.on("changeVolume", roomHandler.changeVolume);
     // socket.on("changeGetPlayerMode", roomHandler.changeGetPlayerMode);
 };
 
