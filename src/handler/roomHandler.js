@@ -11,6 +11,7 @@ module.exports = (io) => {
 
     const deleteRoom = function (room) {
         const socket = this;
+        console.log(`socket.rooms`, socket.rooms)
         if (roomsInfo[room] && socket.id === roomsInfo[room].hostSocketId) {
             io.of("/").to(room).emit("roomWasDeleted", room);
             io.of("/").to(room).disconnectSockets(true);
@@ -41,6 +42,12 @@ module.exports = (io) => {
         io.in(room).emit("sendLog", logData);
     };
 
+    const checkConnection = function(room, socket = this) {
+        if (socket.rooms.indexOf(room) < 0) {
+            joinRoom(room, socket)
+        } else return true
+    }
+
     const leaveRoom = function (room) {
         const socket = this;
         const message = `socket ${socket.id} has leaved room ${room}`;
@@ -48,8 +55,7 @@ module.exports = (io) => {
         addLogRoom(room, message, socket);
     };
 
-    const joinRoom = function (room) {
-        const socket = this;
+    const joinRoom = function (room, socket = this) {
         if (roomsInfo[room]) {
             const message = `socket ${socket.id} has joined room ${room}`;
             socket.join(room);
