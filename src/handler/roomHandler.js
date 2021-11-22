@@ -11,7 +11,6 @@ module.exports = (io) => {
 
     const deleteRoom = function (room) {
         const socket = this;
-        console.log(`socket.rooms`, socket.rooms)
         if (roomsInfo[room] && socket.id === roomsInfo[room].hostSocketId) {
             io.of("/").to(room).emit("roomWasDeleted", room);
             io.of("/").to(room).disconnectSockets(true);
@@ -32,7 +31,7 @@ module.exports = (io) => {
         } else {
             roomsInfo[room] = {
                 logs: [logData],
-                activeUrl: "none",
+                activeUrl: "jNQXAC9IVRw",
                 hostSocketId: socket.id,
                 isMuted: false,
                 isPause: true,
@@ -43,9 +42,9 @@ module.exports = (io) => {
     };
 
     const checkConnection = function(room, socket = this) {
-        if (socket.rooms.indexOf(room) < 0) {
+        if (!socket.rooms.has(room)) {
             joinRoom(room, socket)
-        } else return true
+        } 
     }
 
     const leaveRoom = function (room) {
@@ -73,6 +72,7 @@ module.exports = (io) => {
 
     const editHref = function (room, href) {
         const socket = this;
+        checkConnection(room, socket);
         if (roomsInfo[room]) {
             const message = `socket ${socket.id} in room ${room} changing href: ${href}`;
             roomsInfo[room].activeUrl = href;
@@ -82,6 +82,7 @@ module.exports = (io) => {
     };
     const changePauseVideo = function (room, pause) {
         const socket = this;
+        checkConnection(room, socket);
         if (roomsInfo[room]) {
             const message = `socket ${socket.id} in room ${room} set ${ pause ? "pause" : "play" } video`;
             roomsInfo[room].isPause = pause;
@@ -89,13 +90,59 @@ module.exports = (io) => {
             io.in(room).emit("setPause", pause);
         }
     };
-    // const changeNextVideo = () => {
-    // }
-    // const changePreviousVideo = () => {
-    // }
+    const changeNextVideo = function(room) {
+        const socket = this;
+        checkConnection(room, socket);
+        if (roomsInfo[room]) {
+            const message = `socket ${socket.id} in room ${room} set next video`;
+            addLogRoom(room, message, socket);
+            io.in(room).emit("setNextVideo");
+        }
+    }
+    const changePreviousVideo = function(room) {
+        const socket = this;
+        checkConnection(room, socket);
+        if (roomsInfo[room]) {
+            const message = `socket ${socket.id} in room ${room} set prev video`;
+            addLogRoom(room, message, socket);
+            io.in(room).emit("setPrevVideo");
+        }
+    }
+
+    const changePreviousMoment = function(room) {
+        const socket = this;
+        checkConnection(room, socket);
+        if (roomsInfo[room]) {
+            const message = `socket ${socket.id} in room ${room} set prev moment`;
+            addLogRoom(room, message, socket);
+            io.in(room).emit("setPrevMoment");
+        }
+    }
+
+    const changeNextMoment = function(room) {
+        const socket = this;
+        checkConnection(room, socket);
+        if (roomsInfo[room]) {
+            const message = `socket ${socket.id} in room ${room} set next moment`;
+            addLogRoom(room, message, socket);
+            io.in(room).emit("setNextMoment");
+        }
+    }
+
+    const changeTimeVideo = function(room, seconds, minutes = 0, hour = 0) {
+        const socket = this;
+        checkConnection(room, socket);
+        if (roomsInfo[room]) {
+            const time
+            const message = `socket ${socket.id} in room ${room} set time video on ${(hour && hour + ':') || ''}${minutes}:${seconds}`;
+            addLogRoom(room, message, socket);
+            io.in(room).emit("setTimeVideo");
+        }
+    }
 
     const changeMute = function (room, mute) {
         const socket = this;
+        checkConnection(room, socket);
         if (roomsInfo[room]) {
             const message = `socket ${socket.id} in room ${room} set ${ mute ? "mute" : "unmute" } video`;
             roomsInfo[room].isMuted = mute;
@@ -105,6 +152,7 @@ module.exports = (io) => {
     };
     const changeVolume = function (room, volume) {
         const socket = this;
+        checkConnection(room, socket);
         if (roomsInfo[room]) {
             const message = `socket ${socket.id} in room ${room} set ${volume}% volume for video`;
             roomsInfo[room].volume = volume;
@@ -112,8 +160,7 @@ module.exports = (io) => {
             io.in(room).emit("setVolume", volume);
         }
     };
-    // const changeGetPlayerMode = () => {
-    // }
+    
     return {
         getAllRooms,
         deleteRoom,
