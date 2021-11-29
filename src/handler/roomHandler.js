@@ -94,24 +94,24 @@ module.exports = (io) => {
                 io.in(room).emit("setPause", pause);
             }
         },
-        // changeNextVideo: function (room) {
-        //     const socket = this;
-        //     roomMethods.checkConnection(room, socket);
-        //     if (roomsInfo[room]) {
-        //         const message = `socket ${socket.id} in room ${room} set next video`;
-        //         roomMethods.addLogRoom(room, message, socket);
-        //         io.in(room).emit("setNextVideo");
-        //     }
-        // },
-        // changePreviousVideo: function (room) {
-        //     const socket = this;
-        //     roomMethods.checkConnection(room, socket);
-        //     if (roomsInfo[room]) {
-        //         const message = `socket ${socket.id} in room ${room} set prev video`;
-        //         roomMethods.addLogRoom(room, message, socket);
-        //         io.in(room).emit("setPreviousVideo");
-        //     }
-        // },
+        changeNextVideo: function (room) {
+            const socket = this;
+            roomMethods.checkConnection(room, socket);
+            if (roomsInfo[room]) {
+                const message = `socket ${socket.id} in room ${room} set next video`;
+                roomMethods.addLogRoom(room, message, socket);
+                io.in(room).emit("setNextVideo");
+            }
+        },
+        changePreviousVideo: function (room) {
+            const socket = this;
+            roomMethods.checkConnection(room, socket);
+            if (roomsInfo[room]) {
+                const message = `socket ${socket.id} in room ${room} set prev video`;
+                roomMethods.addLogRoom(room, message, socket);
+                io.in(room).emit("setPreviousVideo");
+            }
+        },
 
         changePreviousMoment: function (room) {
             const socket = this;
