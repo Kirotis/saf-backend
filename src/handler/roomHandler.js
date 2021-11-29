@@ -1,6 +1,22 @@
 const roomsInfo = {};
 const getRoomInfo = (room) => roomsInfo[room];
 
+const hrefParser = (href = "") => {
+    try {
+        const url = new URL(href);
+        switch (url.host) {
+            case "youtu.be":
+                return url.pathname.slice(1);
+            case "youtube.com":
+                return url.searchParams.has("v") && url.searchParams.get("v");
+            default:
+                return false;
+        }
+    } catch {
+        return href;
+    }
+};
+
 module.exports = (io) => {
     const roomMethods = {
         getAllRooms: () => {
@@ -10,8 +26,7 @@ module.exports = (io) => {
             return rooms;
         },
 
-        deleteRoom: function (room) {
-            const socket = this;
+        deleteRoom: function (room, socket = this) {
             if (roomsInfo[room] && socket.id === roomsInfo[room].hostSocketId) {
                 io.of("/").to(room).emit("roomWasDeleted", room);
                 io.of("/").to(room).disconnectSockets(true);
@@ -48,8 +63,7 @@ module.exports = (io) => {
             }
         },
 
-        leaveRoom: function (room) {
-            const socket = this;
+        leaveRoom: function (room, socket = this) {
             const message = `socket ${socket.id} has leaved room ${room}`;
             socket.leave(room);
             roomMethods.addLogRoom(room, message, socket);
@@ -64,26 +78,27 @@ module.exports = (io) => {
             } else socket.emit("roomWasDeleted", room);
         },
 
-        createRoom: function (room) {
-            const socket = this;
+        createRoom: function (room, socket = this) {
             const message = `room ${room} is created by socket ${socket.id}`;
             socket.join(room);
             roomMethods.addLogRoom(room, message, socket);
             socket.emit("setRoomInfo", roomsInfo[room]);
         },
 
-        editHref: function (room, href) {
-            const socket = this;
+        editHref: function (room, href, socket = this) {
             roomMethods.checkConnection(room, socket);
             if (roomsInfo[room]) {
-                const message = `socket ${socket.id} in room ${room} changing href: ${href}`;
-                roomsInfo[room].activeUrl = href;
-                roomMethods.addLogRoom(room, message, socket);
-                io.in(room).emit("setHref", href);
+                const YTId = hrefParser(href);
+                if (YTId) {
+                    const message = `socket ${socket.id} in room ${room} changing href: ${href}`;
+                    roomsInfo[room].activeUrl = YTId;
+                    roomMethods.addLogRoom(room, message, socket);
+                    io.in(room).emit("setHref", href);
+                }
             }
         },
-        changePauseVideo: function (room, pause) {
-            const socket = this;
+
+        changePauseVideo: function (room, pause, socket = this) {
             roomMethods.checkConnection(room, socket);
             if (roomsInfo[room]) {
                 const message = `socket ${socket.id} in room ${room} set ${
@@ -94,8 +109,8 @@ module.exports = (io) => {
                 io.in(room).emit("setPause", pause);
             }
         },
-        changeNextVideo: function (room) {
-            const socket = this;
+
+        changeNextVideo: function (room, socket = this) {
             roomMethods.checkConnection(room, socket);
             if (roomsInfo[room]) {
                 const message = `socket ${socket.id} in room ${room} set next video`;
@@ -103,8 +118,8 @@ module.exports = (io) => {
                 io.in(room).emit("setNextVideo");
             }
         },
-        changePreviousVideo: function (room) {
-            const socket = this;
+
+        changePreviousVideo: function (room, socket = this) {
             roomMethods.checkConnection(room, socket);
             if (roomsInfo[room]) {
                 const message = `socket ${socket.id} in room ${room} set prev video`;
@@ -113,8 +128,7 @@ module.exports = (io) => {
             }
         },
 
-        changePreviousMoment: function (room) {
-            const socket = this;
+        changePreviousMoment: function (room, socket = this) {
             roomMethods.checkConnection(room, socket);
             if (roomsInfo[room]) {
                 const message = `socket ${socket.id} in room ${room} set prev moment`;
@@ -123,8 +137,7 @@ module.exports = (io) => {
             }
         },
 
-        changeNextMoment: function (room) {
-            const socket = this;
+        changeNextMoment: function (room, socket = this) {
             roomMethods.checkConnection(room, socket);
             if (roomsInfo[room]) {
                 const message = `socket ${socket.id} in room ${room} set next moment`;
@@ -133,8 +146,13 @@ module.exports = (io) => {
             }
         },
 
-        changeTimeVideo: function (room, seconds, minutes = 0, hour = 0) {
-            const socket = this;
+        changeTimeVideo: function (
+            room,
+            seconds,
+            minutes = 0,
+            hour = 0,
+            socket = this
+        ) {
             roomMethods.checkConnection(room, socket);
             if (roomsInfo[room]) {
                 const message = `socket ${
@@ -148,8 +166,7 @@ module.exports = (io) => {
             }
         },
 
-        changeMute: function (room, mute) {
-            const socket = this;
+        changeMute: function (room, mute, socket = this) {
             roomMethods.checkConnection(room, socket);
             if (roomsInfo[room]) {
                 const message = `socket ${socket.id} in room ${room} set ${
@@ -160,14 +177,26 @@ module.exports = (io) => {
                 io.in(room).emit("setMute", mute);
             }
         },
-        changeVolume: function (room, volume) {
-            const socket = this;
+
+        changeVolume: function (room, volume, socket = this) {
             roomMethods.checkConnection(room, socket);
             if (roomsInfo[room]) {
                 const message = `socket ${socket.id} in room ${room} set ${volume}% volume for video`;
                 roomsInfo[room].volume = volume;
                 roomMethods.addLogRoom(room, message, socket);
                 io.in(room).emit("setVolume", volume);
+                if (roomsInfo[room].isMuted) {
+                    roomMethods.changeMute(room, false, socket);
+                }
+            }
+        },
+
+        changeFullScreen: function (room, socket = this) {
+            roomMethods.checkConnection(room, socket);
+            if (roomsInfo[room]) {
+                const message = `socket ${socket.id} in room ${room} set fullscreen`;
+                roomMethods.addLogRoom(room, message, socket);
+                io.in(room).emit("setFullScreen");
             }
         },
     };
